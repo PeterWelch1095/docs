@@ -1,0 +1,59 @@
+---
+title: "Get Application by ID — Handshake Integration API Reference"
+sidebarTitle: "Get Application"
+description: "GET /v1/applications/{id} — Retrieve a single application record by its Handshake ID, including student, job, and current pipeline status."
+---
+
+Retrieve the full details of a single application record using its Handshake application ID. Use this endpoint to look up a specific student-to-job relationship and check its current pipeline status, such as when handling a targeted lookup after receiving an application ID from another system.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/applications/{id}
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Path parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | The Handshake application ID. |
+
+## Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the application. |
+| `student_id` | string | Handshake ID of the student who submitted the application. |
+| `job_id` | string | Handshake ID of the job the student applied to. |
+| `status` | string | Current pipeline status. One of: `applied`, `reviewed`, `interview`, `offer`, `hired`, `rejected`, `withdrawn`. |
+| `created_at` | string (ISO 8601) | Timestamp when the application was submitted. |
+| `updated_at` | string (ISO 8601) | Timestamp when the application was last updated. |
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/applications/19274650" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "id": "19274650",
+  "student_id": "4401923",
+  "job_id": "8471023",
+  "status": "interview",
+  "created_at": "2024-03-05T13:42:00Z",
+  "updated_at": "2024-03-11T09:00:00Z"
+}
+```

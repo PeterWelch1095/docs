@@ -1,0 +1,115 @@
+---
+title: "List Student Interests — Handshake Integration API"
+sidebarTitle: "Student Interests"
+description: "GET /v1/student_interests — Returns student-declared career interests, including industry categories and job function preferences, for matching and analytics."
+---
+
+Student interests represent the career areas and job functions that students have selected on their Handshake profiles. Use this data for matching, analytics, and personalization — for example, to identify which industries are most popular among your graduating class, or to route students to relevant opportunities. Each record links one interest category to one student and includes the type of interest so you can distinguish between industry preferences and job function preferences.
+
+```
+GET https://edu-api.joinhandshake.com/v1/student_interests
+```
+
+## Query Parameters
+
+<ParamField query="page_size" type="integer">
+  Number of interest records to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  Opaque pagination cursor. Pass the `next_cursor` value from the previous response to retrieve the next page.
+</ParamField>
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 datetime (e.g. `2024-01-15T00:00:00Z`). When provided, only interest records created or updated at or after this timestamp are returned.
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  Field to sort results by. Accepted values: `id`, `updated_at`, `created_at`.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  Sort direction. Accepted values: `asc` (ascending) or `desc` (descending).
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="results" type="array">
+  Array of student interest objects. Each object links a single interest to a single student.
+
+  <Expandable title="Interest object">
+    <ResponseField name="id" type="string">
+      Unique identifier for this interest assignment record.
+    </ResponseField>
+
+    <ResponseField name="student_id" type="string">
+      Handshake ID of the student who declared this interest. Use this to join with records from the [List Students](/api-reference/students/list) endpoint.
+    </ResponseField>
+
+    <ResponseField name="interest_type" type="string">
+      Category of the interest. Possible values: `industry` (an industry sector, e.g. Finance or Healthcare) or `job_type` (a job function, e.g. Software Engineering or Marketing).
+    </ResponseField>
+
+    <ResponseField name="interest_id" type="string">
+      Unique identifier of the interest category itself. Consistent across all students who select the same interest.
+    </ResponseField>
+
+    <ResponseField name="interest_name" type="string">
+      Human-readable name of the interest category (e.g. `"Technology"` or `"Consulting"`).
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 datetime when the student added this interest to their profile.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="next_cursor" type="string | null">
+  Cursor to pass as `page_cursor` on the next request to retrieve the following page. Returns `null` when you have reached the last page.
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of interest records matching the query, across all pages.
+</ResponseField>
+
+## Example Request
+
+```bash
+curl "https://edu-api.joinhandshake.com/v1/student_interests?page_size=3&updated_since=2024-01-01T00:00:00Z" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+## Example Response
+
+```json
+{
+  "results": [
+    {
+      "id": "772341",
+      "student_id": "9182734",
+      "interest_type": "industry",
+      "interest_id": "12",
+      "interest_name": "Technology",
+      "created_at": "2022-09-05T14:30:00Z"
+    },
+    {
+      "id": "772340",
+      "student_id": "9182734",
+      "interest_type": "job_type",
+      "interest_id": "45",
+      "interest_name": "Software Engineering",
+      "created_at": "2022-09-05T14:30:00Z"
+    },
+    {
+      "id": "772339",
+      "student_id": "9182701",
+      "interest_type": "industry",
+      "interest_id": "8",
+      "interest_name": "Finance",
+      "created_at": "2023-01-15T09:00:00Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6NzcyMzM5fQ==",
+  "total_count": 19482
+}
+```

@@ -1,0 +1,56 @@
+---
+title: "Handshake Integration API — Errors and Troubleshooting"
+sidebarTitle: "Errors"
+description: "Complete reference for Handshake API HTTP error codes, error response formats, and troubleshooting steps for the most common integration issues."
+---
+
+The Handshake API uses standard HTTP status codes to indicate success or failure. When a request fails, the response body contains a JSON object with details about the error.
+
+## Error response format
+
+Every error response includes an `error` field with a machine-readable code, a `message` field with a human-readable description, and a `status` field that mirrors the HTTP status code.
+
+```json
+{
+  "error": "unauthorized",
+  "message": "Invalid or missing API key",
+  "status": 401
+}
+```
+
+## HTTP status codes
+
+| Status | Name | Description |
+|--------|------|-------------|
+| 200 | OK | Request succeeded. |
+| 400 | Bad Request | Invalid query parameter or request format. |
+| 401 | Unauthorized | API key is missing or invalid. |
+| 403 | Forbidden | API key doesn't have access to this resource. |
+| 404 | Not Found | Resource does not exist. |
+| 429 | Too Many Requests | Rate limit exceeded; retry after a delay. |
+| 500 | Internal Server Error | Unexpected server error; contact support if persistent. |
+| 503 | Service Unavailable | API temporarily unavailable; retry with backoff. |
+
+## Common errors and fixes
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized">
+    Check that the `x-api-key` header is present on every request and that the key value is correct. API keys are case-sensitive. If you recently rotated your key, make sure you are using the new value everywhere the old key appeared in your integration.
+  </Accordion>
+
+  <Accordion title="403 Forbidden">
+    Your API key may not have access to this endpoint. Not all keys are provisioned with access to every resource. Contact your Handshake account manager to request access to the endpoint you need.
+  </Accordion>
+
+  <Accordion title="400 Bad Request">
+    Check the names and values of every query parameter in your request. Parameter names are case-sensitive. Dates must be in ISO 8601 format — for example, `2024-01-15T00:00:00Z`. An unrecognized parameter name or a malformed date value are the most common causes of this error.
+  </Accordion>
+
+  <Accordion title="429 Too Many Requests">
+    You have exceeded the rate limit for your API key. Implement exponential backoff — wait before retrying, and double the wait time on each successive failure. You can also reduce the frequency of your requests or lower your `page_size` to spread the same data fetch across more, lighter requests.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Include the full request URL and the complete response body when contacting Handshake support. This helps the support team identify the root cause without needing to reproduce your exact request.
+</Tip>

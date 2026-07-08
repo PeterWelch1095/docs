@@ -1,0 +1,44 @@
+---
+title: "Handshake API: Connect Your Systems to Early Career Data"
+sidebarTitle: "Introduction"
+description: "The Handshake API gives integration clients programmatic access to student profiles, job postings, applications, events, and employer data from the Handshake platform."
+---
+
+Handshake is the early career network that connects students at thousands of institutions with hundreds of thousands of employers. The Handshake Integration API gives you programmatic access to the data within your institution's account — student profiles, job postings, applications, events, career fairs, and employer engagement records. You can use the API to power data integrations, keep an ATS in sync with Handshake activity, feed analytics pipelines, or build custom reporting tools.
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Student Data" icon="user-graduate">
+    Retrieve student profiles including academic information, career interests, work experience, and engagement history within your institution's account.
+  </Card>
+  <Card title="Job & Application Tracking" icon="briefcase">
+    Pull job postings and application records to track student activity, monitor recruiting pipelines, and report on outcomes.
+  </Card>
+  <Card title="Events & Career Fairs" icon="calendar">
+    Access event registrations, attendee lists, and career fair participation data to measure engagement and plan programming.
+  </Card>
+  <Card title="Employer Engagement" icon="building">
+    Retrieve employer records and their activity on your campus to support relationship management and reporting.
+  </Card>
+</CardGroup>
+
+## Key capabilities
+
+- **REST API with JSON responses** — All endpoints follow standard REST conventions and return JSON. No special client library is required.
+- **API key authentication via `x-api-key` header** — Every request is authenticated with a single header. See [Authentication](/authentication) for details.
+- **Cursor-based pagination** — Large result sets are paginated using an opaque cursor. Pass the `next_cursor` value from one response as the `page_cursor` parameter in the next request.
+- **Incremental sync with `updated_since`** — Filter results to only records updated after a given timestamp. Use this parameter to avoid re-fetching unchanged data on every run.
+- **Page size up to 100 records** — Control the number of records returned per request with the `page_size` parameter, up to a maximum of 100.
+
+## Base URL
+
+All API requests are made to the following base URL:
+
+```
+https://edu-api.joinhandshake.com/v1/
+```
+
+<Note>
+  The Handshake Integration API is currently in beta. Access is available to approved integration partners only. Contact your Handshake account manager to request access for your institution.
+</Note>

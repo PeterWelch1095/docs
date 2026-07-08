@@ -1,0 +1,158 @@
+---
+title: "Export Event and Career Fair Attendance Data from Handshake"
+sidebarTitle: "Export Events"
+description: "Retrieve event listings, career fair sessions, and student attendance records from Handshake to power reporting, analytics, and engagement tracking."
+---
+
+Handshake hosts events and career fairs that connect students with employers. The API lets you export event listings, session schedules, and attendance records for reporting and analytics. Whether you need to measure student engagement across the semester, report career fair participation to stakeholders, or feed event data into an external analytics platform, the endpoints covered in this guide give you the raw data to do it.
+
+## Events
+
+`GET /v1/events` returns all events hosted at your institution. Events include workshops, info sessions, networking nights, and any other programming your career center has created in Handshake.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/events \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields in each event record:
+
+| Field | Description |
+|---|---|
+| `id` | Unique identifier for the event |
+| `title` | Display name of the event |
+| `start_at` | ISO 8601 start timestamp |
+| `end_at` | ISO 8601 end timestamp |
+| `event_type` | Category of event (e.g. `workshop`, `info_session`, `networking`) |
+| `virtual` | Boolean — `true` if the event is held online |
+| `created_at` | ISO 8601 timestamp when the event was created |
+
+## Event attendance
+
+`GET /v1/event_attendance` returns a record for every student who registered for or attended an event. Use this endpoint to measure turnout and identify engaged students.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/event_attendance \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields in each attendance record:
+
+| Field | Description |
+|---|---|
+| `id` | Unique identifier for the attendance record |
+| `student_id` | ID of the attending student |
+| `event_id` | ID of the event |
+| `registered_at` | ISO 8601 timestamp when the student registered |
+| `attended` | Boolean — `true` if the student was marked as having attended |
+
+## Career fairs
+
+Career fairs have their own set of endpoints that expose both the fair-level record and individual employer sessions within that fair.
+
+**Career fairs — `GET /v1/career_fairs`**
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/career_fairs \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields:
+
+| Field | Description |
+|---|---|
+| `id` | Unique identifier for the career fair |
+| `name` | Display name of the fair |
+| `start_at` | ISO 8601 start timestamp |
+| `end_at` | ISO 8601 end timestamp |
+
+**Career fair sessions — `GET /v1/career_fair_sessions`**
+
+Sessions represent an individual employer's scheduled slot within a career fair. Each session record extends the career fair fields with:
+
+| Field | Description |
+|---|---|
+| `career_fair_id` | ID of the parent career fair |
+| `employer_id` | ID of the participating employer |
+| `time_slot` | Scheduled time slot for the session (ISO 8601 interval or label) |
+
+## Career fair attendance
+
+`GET /v1/career_fair_attendance` returns records for students who checked in to a career fair. Use this to report total attendance figures and identify which students met with employers.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/career_fair_attendance \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields:
+
+| Field | Description |
+|---|---|
+| `student_id` | ID of the student who checked in |
+| `career_fair_id` | ID of the career fair |
+| `checked_in_at` | ISO 8601 timestamp of check-in |
+
+## Exporting attendees for a specific event
+
+The snippet below fetches all students who attended a specific event and builds a list of student IDs you can join against your student table.
+
+```python
+import requests
+
+API_BASE = "https://edu-api.joinhandshake.com/v1"
+HEADERS = {"x-api-key": "<YOUR_API_KEY>"}
+
+
+def get_event_attendees(event_id: str) -> list[dict]:
+    """
+    Return all attendance records for a given event_id
+    where the student was marked as attended.
+    """
+    params = {
+        "page_size": 100,
+        "event_id": event_id,  # Filter server-side to this event
+    }
+    attendees = []
+
+    while True:
+        response = requests.get(
+            f"{API_BASE}/event_attendance",
+            headers=HEADERS,
+            params=params,
+        )
+        response.raise_for_status()
+        body = response.json()
+
+        for record in body.get("results", []):
+            if record.get("attended"):
+                attendees.append({
+                    "student_id": record["student_id"],
+                    "registered_at": record["registered_at"],
+                })
+
+        next_cursor = body.get("next_cursor")
+        if not next_cursor:
+            break
+        params["page_cursor"] = next_cursor
+
+    print(f"Found {len(attendees)} confirmed attendees for event {event_id}.")
+    return attendees
+
+
+# Example usage
+attendees = get_event_attendees("evt_abc123")
+student_ids = [a["student_id"] for a in attendees]
+```
+
+<Tip>
+  Use `updated_since` with event attendance endpoints to capture newly registered or checked-in students without re-fetching all historical records. Store the timestamp of your last successful sync and pass it as `updated_since` on the next run to retrieve only records created or modified since then.
+</Tip>

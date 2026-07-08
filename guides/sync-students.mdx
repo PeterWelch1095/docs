@@ -1,0 +1,157 @@
+---
+title: "Sync Student Profiles from Handshake to Your System"
+sidebarTitle: "Sync Students"
+description: "Build an incremental sync pipeline that pulls student profile data from the Handshake API into your database or data warehouse using updated_since."
+---
+
+The Handshake API lets you sync student profile data — including names, emails, graduation years, majors, skills, and labels — into your own systems. This guide walks you through building an incremental sync pipeline that handles both an initial bulk load and ongoing incremental updates, so your downstream database or data warehouse stays current without re-fetching records that haven't changed.
+
+## What student data is available
+
+Each student record returned by `GET /v1/students` includes the following fields:
+
+- `id` — unique identifier for the student (use this as your primary key)
+- `first_name` — student's first name
+- `last_name` — student's last name
+- `email` — primary email address
+- `graduation_year` — expected graduation year (e.g. `2026`)
+- `major` — declared major or program of study
+- `school_year` — current academic year (e.g. `Junior`)
+- `gpa` — grade point average, if shared by the student
+- `skills` — array of skill strings the student has added to their profile
+- `interests` — array of interest strings
+- `labels` — array of institution-defined labels applied to the student
+- `updated_at` — ISO 8601 timestamp of the last profile update
+
+## Full initial sync
+
+Run a full initial sync when you first connect to the API to load all existing student records into your system. Work through all pages before recording a checkpoint timestamp.
+
+**Steps:**
+
+1. Fetch the first page with `page_size=100`.
+2. Upsert each record into your database using `id` as the unique key.
+3. Read `next_cursor` from the response. If it is not `null`, pass it as `page_cursor` in the next request.
+4. Repeat until `next_cursor` is `null`, then record the current UTC time as your checkpoint.
+
+```python
+import requests
+from datetime import datetime, timezone
+
+API_BASE = "https://edu-api.joinhandshake.com/v1"
+HEADERS = {"x-api-key": "<YOUR_API_KEY>"}
+
+
+def full_sync_students(db):
+    """Fetch all students and upsert them into `db`. Returns a checkpoint timestamp."""
+    params = {"page_size": 100}
+
+    while True:
+        response = requests.get(f"{API_BASE}/students", headers=HEADERS, params=params)
+        response.raise_for_status()
+        body = response.json()
+
+        students = body.get("results", [])
+        for student in students:
+            db.upsert("students", record=student, conflict_key="id")
+
+        next_cursor = body.get("next_cursor")
+        if not next_cursor:
+            break
+
+        params["page_cursor"] = next_cursor
+
+    # Record checkpoint after the full sync completes
+    checkpoint = datetime.now(timezone.utc).isoformat()
+    db.set_checkpoint("students", checkpoint)
+    print(f"Full sync complete. Checkpoint saved: {checkpoint}")
+    return checkpoint
+```
+
+## Incremental updates
+
+After the initial sync, use `updated_since` to fetch only the records that changed since your last checkpoint. This keeps API usage low and sync time fast.
+
+Pass your saved checkpoint timestamp as the `updated_since` query parameter. When the incremental run finishes, update the checkpoint to the current time.
+
+```python
+def incremental_sync_students(db):
+    """Fetch only students updated since the last checkpoint and upsert them."""
+    checkpoint = db.get_checkpoint("students")
+    if not checkpoint:
+        raise RuntimeError("No checkpoint found. Run a full sync first.")
+
+    params = {
+        "page_size": 100,
+        "updated_since": checkpoint,
+    }
+
+    total_updated = 0
+
+    while True:
+        response = requests.get(f"{API_BASE}/students", headers=HEADERS, params=params)
+        response.raise_for_status()
+        body = response.json()
+
+        students = body.get("results", [])
+        for student in students:
+            db.upsert("students", record=student, conflict_key="id")
+        total_updated += len(students)
+
+        next_cursor = body.get("next_cursor")
+        if not next_cursor:
+            break
+
+        params["page_cursor"] = next_cursor
+
+    # Advance the checkpoint
+    new_checkpoint = datetime.now(timezone.utc).isoformat()
+    db.set_checkpoint("students", new_checkpoint)
+    print(f"Incremental sync complete. {total_updated} records updated. New checkpoint: {new_checkpoint}")
+    return new_checkpoint
+```
+
+Run this function on a schedule — for example, every 15 minutes — to keep your local copy current.
+
+## Syncing related data
+
+Student skills, interests, and labels are also available as dedicated endpoints. Each record includes a `student_id` field you can use to join back to your students table.
+
+| Endpoint | Description |
+|---|---|
+| `GET /v1/student_skills` | Skills added by students to their profiles |
+| `GET /v1/student_interests` | Interests students have selected |
+| `GET /v1/student_labels` | Institution-defined labels applied to students |
+
+All three endpoints support the same pagination and `updated_since` parameters as the main `/v1/students` endpoint, so you can run incremental syncs on each independently.
+
+```python
+RELATED_ENDPOINTS = [
+    "/v1/student_skills",
+    "/v1/student_interests",
+    "/v1/student_labels",
+]
+
+def sync_student_related(db, endpoint, checkpoint=None):
+    params = {"page_size": 100}
+    if checkpoint:
+        params["updated_since"] = checkpoint
+
+    while True:
+        response = requests.get(f"{API_BASE}{endpoint}", headers=HEADERS, params=params)
+        response.raise_for_status()
+        body = response.json()
+
+        for record in body.get("results", []):
+            # Join to students table via record["student_id"]
+            db.upsert(endpoint.lstrip("/"), record=record, conflict_key="id")
+
+        next_cursor = body.get("next_cursor")
+        if not next_cursor:
+            break
+        params["page_cursor"] = next_cursor
+```
+
+<Tip>
+  Always upsert (insert or update) on the student `id` field to handle both new records and updates. Using a plain insert will cause failures when re-processing records that already exist in your database.
+</Tip>

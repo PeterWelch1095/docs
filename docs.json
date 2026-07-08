@@ -1,0 +1,108 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Handshake Integration Docs",
+  "theme": "luma",
+  "colors": {
+    "primary": "#ef7025",
+    "light": "#eec9bc",
+    "dark": "#4fa1ab"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/data-model",
+              "concepts/pagination",
+              "concepts/filtering",
+              "concepts/rate-limits"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/sync-students",
+              "guides/track-applications",
+              "guides/export-events",
+              "guides/webhooks"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "errors",
+              "changelog",
+              "faq"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Students",
+            "pages": [
+              "api-reference/students/list",
+              "api-reference/students/get",
+              "api-reference/students/labels",
+              "api-reference/students/interests",
+              "api-reference/students/skills"
+            ]
+          },
+          {
+            "group": "Jobs & Applications",
+            "pages": [
+              "api-reference/jobs/list",
+              "api-reference/jobs/get",
+              "api-reference/applications/list",
+              "api-reference/applications/get"
+            ]
+          },
+          {
+            "group": "Events & Career Fairs",
+            "pages": [
+              "api-reference/events/list",
+              "api-reference/events/get",
+              "api-reference/career-fairs/list",
+              "api-reference/career-fairs/get"
+            ]
+          },
+          {
+            "group": "Employers & Contacts",
+            "pages": [
+              "api-reference/employers/list",
+              "api-reference/employers/get",
+              "api-reference/contacts/list"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Get API Access",
+      "href": "https://joinhandshake.com"
+    }
+  }
+}

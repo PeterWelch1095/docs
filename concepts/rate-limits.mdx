@@ -1,0 +1,62 @@
+---
+title: "Handshake API Rate Limits and Throttling"
+sidebarTitle: "Rate Limits"
+description: "Understand Handshake API rate limits, how to detect throttling via HTTP 429 responses, and best practices for staying within limits."
+---
+
+The Handshake API enforces rate limits to ensure fair usage across all integration clients. Understanding these limits helps you design integrations that stay within bounds and recover gracefully when they are exceeded.
+
+## Rate limit behavior
+
+When your integration sends requests faster than the rate limit allows, the API responds with an HTTP `429 Too Many Requests` status code. Your integration should treat a `429` response as a signal to pause and retry — not as a permanent error.
+
+Build retry logic into your integration from the start. A `429` response does not indicate a problem with your request itself; it means you need to wait before sending the next one.
+
+<Note>
+When the API returns a `429` response, check for a `Retry-After` header. If present, its value indicates the number of seconds you should wait before retrying. When the header is absent, use exponential backoff as described below.
+</Note>
+
+## Handling 429 responses
+
+Use exponential backoff when retrying after a `429` response. This strategy progressively increases the wait time between retries, reducing pressure on the API and improving the likelihood that subsequent requests succeed.
+
+```python
+import requests
+import time
+
+BASE_URL = "https://edu-api.joinhandshake.com/v1"
+HEADERS = {"x-api-key": "YOUR_API_KEY"}
+
+def get_with_backoff(url, params=None, max_retries=5):
+    delay = 1  # Initial delay in seconds
+
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=HEADERS, params=params)
+
+        if response.status_code == 429:
+            if attempt < max_retries - 1:
+                # Honor Retry-After if present, otherwise use exponential backoff
+                retry_after = response.headers.get("Retry-After")
+                wait = int(retry_after) if retry_after else delay
+                print(f"Rate limited. Retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait)
+                delay *= 2  # Double the delay for the next attempt
+            else:
+                response.raise_for_status()  # Raise after exhausting retries
+        else:
+            response.raise_for_status()
+            return response.json()
+
+    return None
+```
+
+## Best practices
+
+- **Use `page_size=100` to minimize request count.** Fetching the maximum number of records per page reduces the total number of API calls your integration makes during a bulk sync.
+- **Use `updated_since` to avoid re-fetching unchanged data.** Incremental syncs that request only updated records are far less likely to trigger rate limits than full re-syncs on every run.
+- **Avoid parallel high-volume requests.** Sending many concurrent requests against the same endpoint multiplies your effective request rate. Use sequential pagination rather than parallelizing page fetches.
+- **Schedule large syncs during off-peak hours.** If your integration performs bulk data exports, consider running them outside of peak recruiting seasons or business hours to reduce contention.
+
+<Note>
+If you consistently hit rate limits despite following these best practices, contact your Handshake account manager to discuss your use case. There may be options available for integrations with high-volume requirements.
+</Note>

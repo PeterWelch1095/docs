@@ -1,0 +1,73 @@
+---
+title: "Handshake API Data Model and Core Resources"
+sidebarTitle: "Data Model"
+description: "An overview of core Handshake API resources — students, jobs, applications, events, career fairs, employers, and contacts — and how they relate."
+---
+
+The Handshake API exposes a set of interconnected resources representing the core entities on the platform. Understanding their relationships helps you design efficient integrations.
+
+## Core resources
+
+| Resource | Endpoint(s) | Description |
+|---|---|---|
+| `students` | `/v1/students`, `/v1/students/{id}` | Individuals registered on Handshake who are actively seeking employment or internships. |
+| `jobs` | `/v1/jobs`, `/v1/jobs/{id}` | Job and internship postings created by employers and made available to students. |
+| `postings` | `/v1/postings` | All employer postings visible to your institution, including jobs and other opportunity types. |
+| `applications` | `/v1/applications`, `/v1/applications/{id}` | Records of a student applying to a specific job posting. |
+| `events` | `/v1/events`, `/v1/events/{id}` | Recruiting events — such as info sessions or workshops — that students can register for and attend. |
+| `event_attendance` | `/v1/event_attendance` | Records of students who attended a specific event. |
+| `career_fairs` | `/v1/career_fairs`, `/v1/career_fairs/{id}` | Structured recruiting fairs where multiple employers meet with students at a scheduled time. |
+| `career_fair_sessions` | `/v1/career_fair_sessions` | Individual sessions within a career fair, such as employer time slots or breakout rooms. |
+| `career_fair_attendance` | `/v1/career_fair_attendance` | Records of students who attended a specific career fair. |
+| `employers` | `/v1/employers`, `/v1/employers/{id}` | Companies and organizations that post jobs and engage with students on the platform. |
+| `contacts` | `/v1/contacts` | Individual representatives associated with an employer organization. |
+| `appointments` | `/v1/appointments` | Scheduled advising or career counseling sessions between students and staff. |
+| `surveys` | `/v1/surveys`, `/v1/survey_responses`, `/v1/first_destination_responses` | First-destination outcome surveys and their responses, recording post-graduation outcomes for students. |
+| `student_labels` | `/v1/student_labels` | Labels assigned to students for segmentation and organizational purposes. |
+| `student_interests` | `/v1/student_interests` | Career interests associated with student profiles. |
+| `student_skills` | `/v1/student_skills` | Skills associated with student profiles. |
+
+## Resource relationships
+
+The resources in the Handshake API are designed to reflect real-world recruiting workflows. The key relationships are:
+
+- **Students apply to jobs.** Each application record links a student to a job posting and captures status information about that application.
+- **Students attend events and career fairs.** Registration and attendance records tie a student to the events or career fairs they have engaged with.
+- **Employers post jobs and participate in events and career fairs.** An employer can own multiple job postings and be associated with one or more events or career fair registrations.
+- **Contacts are employer representatives.** Each contact belongs to an employer and represents a specific person — such as a recruiter or hiring manager — at that organization.
+- **Surveys capture first-destination outcomes for students.** Survey responses are associated with a student and record post-graduation outcomes such as employment status, employer, and role.
+- **Labels, interests, and skills annotate student profiles.** These resources let you segment and filter students by institutional categories, career interests, and self-reported skills without modifying the underlying student record.
+
+## Common fields
+
+The following fields are present on most resources returned by the API:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique identifier for the resource. |
+| `created_at` | string (ISO 8601 datetime) | Timestamp when the record was created. |
+| `updated_at` | string (ISO 8601 datetime) | Timestamp when the record was last updated. |
+
+## Labels
+
+Students can have labels attached for segmentation and organizational purposes. Labels allow your institution to categorize records without modifying the underlying data. You can retrieve all student labels via `/v1/student_labels`.
+
+When present, labels are returned as an array of label objects on the resource. Each label object contains the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique identifier for the label. |
+| `name` | string | Human-readable name of the label. |
+
+For example, a student record might include:
+
+```json
+"labels": [
+  { "id": "101", "name": "Engineering" },
+  { "id": "204", "name": "Fall 2024 Cohort" }
+]
+```
+
+<Note>
+All resource IDs in the Handshake API are strings. Treat them as opaque identifiers — do not parse or derive meaning from their structure, and do not cast them to integers in your integration code.
+</Note>

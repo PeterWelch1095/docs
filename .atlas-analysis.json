@@ -1,0 +1,135 @@
+{
+  "projectType": "api-service",
+  "projectName": "Handshake Integration Docs",
+  "projectDescription": "Developer documentation for integrating with Handshake's platform APIs, enabling clients to connect their systems with early career recruiting workflows.",
+  "theme": "luma",
+  "primaryColor": "#ef7025",
+  "lightColor": "#eec9bc",
+  "darkColor": "#4fa1ab",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/data-model",
+              "concepts/pagination",
+              "concepts/filtering",
+              "concepts/rate-limits"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/sync-students",
+              "guides/track-applications",
+              "guides/export-events",
+              "guides/webhooks"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "errors",
+              "changelog",
+              "faq"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Students",
+            "pages": [
+              "api-reference/students/list",
+              "api-reference/students/get",
+              "api-reference/students/labels",
+              "api-reference/students/interests",
+              "api-reference/students/skills"
+            ]
+          },
+          {
+            "group": "Jobs & Applications",
+            "pages": [
+              "api-reference/jobs/list",
+              "api-reference/jobs/get",
+              "api-reference/applications/list",
+              "api-reference/applications/get"
+            ]
+          },
+          {
+            "group": "Events & Career Fairs",
+            "pages": [
+              "api-reference/events/list",
+              "api-reference/events/get",
+              "api-reference/career-fairs/list",
+              "api-reference/career-fairs/get"
+            ]
+          },
+          {
+            "group": "Employers & Contacts",
+            "pages": [
+              "api-reference/employers/list",
+              "api-reference/employers/get",
+              "api-reference/contacts/list"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "API key authentication via x-api-key header",
+    "Cursor-based pagination for large data sets",
+    "Incremental sync with updated_since filter",
+    "Student profile data including skills, interests, and labels",
+    "Job postings and application tracking",
+    "Event and career fair attendance data",
+    "Employer engagement analytics",
+    "First destination survey responses"
+  ],
+  "publicApiSurface": [
+    "GET /v1/students",
+    "GET /v1/students/{id}",
+    "GET /v1/student_labels",
+    "GET /v1/student_interests",
+    "GET /v1/student_skills",
+    "GET /v1/jobs",
+    "GET /v1/jobs/{id}",
+    "GET /v1/applications",
+    "GET /v1/applications/{id}",
+    "GET /v1/events",
+    "GET /v1/events/{id}",
+    "GET /v1/event_attendance",
+    "GET /v1/career_fairs",
+    "GET /v1/career_fairs/{id}",
+    "GET /v1/career_fair_sessions",
+    "GET /v1/career_fair_attendance",
+    "GET /v1/employers",
+    "GET /v1/employers/{id}",
+    "GET /v1/contacts",
+    "GET /v1/surveys",
+    "GET /v1/survey_responses",
+    "GET /v1/first_destination_responses",
+    "GET /v1/appointments",
+    "GET /v1/postings"
+  ]
+}

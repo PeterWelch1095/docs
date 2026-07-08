@@ -1,0 +1,77 @@
+---
+title: "Handshake Integration API — Overview & Reference"
+sidebarTitle: "Overview"
+description: "Base URL, authentication, request format, and response conventions for the Handshake Integration REST API. All endpoints return JSON."
+---
+
+The Handshake Integration API is a REST API that returns JSON. All endpoints are accessed over HTTPS from the base URL below. You can use the API to export and sync student profiles, job applications, events, and employer data from your institution's Handshake account into your own systems.
+
+## Base URL
+
+All endpoints are relative to the following base URL:
+
+```
+https://edu-api.joinhandshake.com/v1/
+```
+
+## Authentication
+
+Every request must include your API key in the `x-api-key` request header. Requests without a valid key return a `401 Unauthorized` response.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/students \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+Contact your Handshake institutional administrator to obtain an API key. Keep your key secure — do not expose it in client-side code or public repositories.
+
+## Request Format
+
+All requests use the `GET` method. No request body is required or accepted. Use query parameters to control filtering, sorting, and pagination. For example:
+
+```
+GET /v1/students?page_size=50&sorting_column=updated_at&sorting_order=desc
+```
+
+## Response Format
+
+All responses return JSON. List endpoints wrap records in a `results` array and include cursor-based pagination metadata:
+
+```json
+{
+  "results": [ ... ],
+  "next_cursor": "eyJpZCI6MTIzfQ==",
+  "total_count": 4821
+}
+```
+
+When `next_cursor` is `null`, you have reached the last page of results. Single-resource endpoints (for example, `GET /v1/students/{id}`) return the object directly at the top level, without a wrapping array.
+
+## Common Query Parameters
+
+The following query parameters are supported on all list endpoints:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page_size` | integer | Number of records to return per page. Maximum is `100`. Defaults to `25`. |
+| `page_cursor` | string | Opaque cursor returned in the previous response's `next_cursor` field. Pass this value to retrieve the next page. |
+| `updated_since` | string | ISO 8601 datetime (e.g. `2024-01-15T00:00:00Z`). When set, only records updated at or after this timestamp are returned. |
+| `sorting_column` | string | The field to sort results by. Accepted values vary by endpoint; `id`, `updated_at`, and `created_at` are supported on most list endpoints. |
+| `sorting_order` | string | Sort direction. Accepted values: `asc` (ascending) or `desc` (descending). |
+
+## Available Resources
+
+<CardGroup cols={2}>
+  <Card title="Students" icon="graduation-cap" href="/api-reference/students/list">
+    Export student profiles, labels, interests, and skills scoped to your institution.
+  </Card>
+  <Card title="Jobs & Applications" icon="briefcase" href="/api-reference/jobs/list">
+    Access job postings and application records associated with your institution's students.
+  </Card>
+  <Card title="Events & Career Fairs" icon="calendar" href="/api-reference/events/list">
+    Retrieve event registrations, attendance, and career fair participation data.
+  </Card>
+  <Card title="Employers & Contacts" icon="building" href="/api-reference/employers/list">
+    Pull employer profiles and recruiter contact records connected to your institution.
+  </Card>
+</CardGroup>

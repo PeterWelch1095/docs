@@ -1,0 +1,49 @@
+---
+title: "Frequently Asked Questions — Handshake Integration API"
+sidebarTitle: "FAQ"
+description: "Answers to common questions about API access, data availability, rate limits, authentication, and integration patterns for the Handshake API."
+---
+
+Find answers to the most common questions about integrating with the Handshake API below. If your question isn't covered here, contact your Handshake account manager or integration support team.
+
+<AccordionGroup>
+  <Accordion title="How do I get API access?">
+    Contact your Handshake account manager to request API access. API access is available to approved integration partners. Once your application is reviewed, you will receive an API key scoped to your institution.
+  </Accordion>
+
+  <Accordion title="What data can I access?">
+    Your API key gives you access to the following data scoped to your institution: students, jobs, applications, events, career fairs, employers, contacts, surveys, and first-destination responses. The specific endpoints available to your key depend on the permissions granted during onboarding.
+  </Accordion>
+
+  <Accordion title="How fresh is the data?">
+    Data is generally available within a few minutes of changes being made on the Handshake platform. To keep your integration current without fetching full datasets on every run, use the `updated_since` parameter with an ISO 8601 datetime. This returns only records that have changed since that timestamp, making it efficient for near-real-time incremental sync.
+  </Accordion>
+
+  <Accordion title="Is data scoped to my institution?">
+    Yes. Your API key scopes all responses to your institution's data only. You cannot access data belonging to other institutions, and other institutions cannot access your data.
+  </Accordion>
+
+  <Accordion title="What is the maximum page size?">
+    The maximum value for the `page_size` parameter is 100 records per request. If you omit `page_size`, the API uses a default page size. For large datasets, use cursor-based pagination to retrieve all records across multiple requests.
+  </Accordion>
+
+  <Accordion title="How do I handle pagination?">
+    Each list response includes a `next_cursor` field. Pass the value of `next_cursor` as the `page_cursor` query parameter in your next request to retrieve the following page of results. When `next_cursor` is `null`, you have reached the last page and there are no more records to fetch.
+  </Accordion>
+
+  <Accordion title="Can I filter results by date?">
+    Yes. Use the `updated_since` parameter with an ISO 8601 datetime string — for example, `2024-01-15T00:00:00Z` — to retrieve only records that were updated after that point in time. This is the recommended approach for incremental data syncs.
+  </Accordion>
+
+  <Accordion title="What should I do if my API key is compromised?">
+    Contact your Handshake account manager immediately to revoke the compromised key and issue a replacement. Update your integration with the new key as soon as it is available. Do not commit API keys to source control or expose them in client-side code.
+  </Accordion>
+
+  <Accordion title="Is the API available for production use?">
+    The API is currently in beta. It is functional and actively used by integration partners, but endpoints and response formats may change before general availability. If you are planning a production deployment, discuss your requirements and timeline with your Handshake account manager so you can be notified of upcoming changes in advance.
+  </Accordion>
+
+  <Accordion title="How do I get support?">
+    Contact your dedicated Handshake integration support team or email your account manager directly. When you reach out, include the full request URL, the HTTP status code you received, and the complete error response body. This information helps the support team diagnose your issue quickly.
+  </Accordion>
+</AccordionGroup>

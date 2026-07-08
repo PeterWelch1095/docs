@@ -1,0 +1,98 @@
+---
+title: "List Jobs — Handshake Integration API Reference"
+sidebarTitle: "List Jobs"
+description: "GET /v1/jobs — Returns a paginated list of job postings available at your institution on Handshake. Filter by date and sort by key fields."
+---
+
+The List Jobs endpoint returns job postings visible to your institution on Handshake, including full-time roles, internships, part-time jobs, and co-ops. Use pagination and filtering parameters to work through large result sets or to sync only records that have changed since a previous request.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/jobs
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Query parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page_size` | integer | Number of results per page. Maximum `100`. |
+| `page_cursor` | string | Cursor returned in a previous response as `next_cursor`. Pass this value to retrieve the next page. |
+| `updated_since` | string (ISO 8601) | Return only records updated at or after this timestamp. Example: `2024-01-15T00:00:00Z`. |
+| `sorting_column` | string | Field to sort results by. Accepted values: `id`, `updated_at`, `created_at`, `title`. |
+| `sorting_order` | string | Sort direction. Accepted values: `asc`, `desc`. |
+
+## Response
+
+| Field | Type | Description |
+|---|---|---|
+| `results` | array | Array of job objects for the current page. |
+| `next_cursor` | string \| null | Cursor for the next page of results. `null` when there are no further pages. |
+| `total_count` | integer | Total number of job records matching the query. |
+
+### Job object fields
+
+<Expandable title="Job object">
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the job. |
+| `title` | string | Job title as entered by the employer. |
+| `employer_id` | string | Unique identifier of the employer who posted the job. |
+| `employer_name` | string | Display name of the employer. |
+| `job_type` | string | Type of role. One of: `full_time`, `internship`, `part_time`, `co_op`. |
+| `status` | string | Current posting status. One of: `active`, `expired`, `draft`. |
+| `description` | string | Full job description text. |
+| `created_at` | string (ISO 8601) | Timestamp when the job was created. |
+| `updated_at` | string (ISO 8601) | Timestamp when the job was last updated. |
+
+</Expandable>
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/jobs?page_size=25&sorting_column=updated_at&sorting_order=desc" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "results": [
+    {
+      "id": "8471023",
+      "title": "Software Engineering Intern",
+      "employer_id": "30192",
+      "employer_name": "Acme Corp",
+      "job_type": "internship",
+      "status": "active",
+      "description": "Join our engineering team for a 12-week summer internship working on distributed systems.",
+      "created_at": "2024-02-01T09:15:00Z",
+      "updated_at": "2024-03-10T14:22:00Z"
+    },
+    {
+      "id": "8470888",
+      "title": "Financial Analyst",
+      "employer_id": "58847",
+      "employer_name": "Meridian Partners",
+      "job_type": "full_time",
+      "status": "active",
+      "description": "Analyze financial data and prepare reports for internal stakeholders.",
+      "created_at": "2024-01-28T11:00:00Z",
+      "updated_at": "2024-03-09T08:45:00Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6Ijg0NzA4ODgifQ==",
+  "total_count": 312
+}
+```

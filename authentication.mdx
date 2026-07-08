@@ -1,0 +1,68 @@
+---
+title: "Authenticate with the Handshake API Using API Keys"
+sidebarTitle: "Authentication"
+description: "All Handshake API requests require an API key passed in the x-api-key header. Learn how to obtain your key and handle authentication errors."
+---
+
+The Handshake API uses API key authentication. Every request must include a valid API key in the `x-api-key` request header. Requests that are missing a key, or that include an invalid or expired key, will receive an error response and will not return data. There are no OAuth flows or token exchanges — authentication is handled entirely through this single header.
+
+## Obtaining your API key
+
+Contact your Handshake account manager to request an API key for your integration. Your API key is unique to your integration and scoped to your institution's account. Treat it as a secret — it grants access to the data in your account.
+
+## Making authenticated requests
+
+Pass your API key as the value of the `x-api-key` header on every request. The examples below show how to do this in common HTTP clients.
+
+<CodeGroup>
+  ```bash curl
+  curl -X GET "https://edu-api.joinhandshake.com/v1/students?page_size=10" \
+    -H "x-api-key: YOUR_API_KEY"
+  ```
+
+  ```python Python (requests)
+  import requests
+  import os
+
+  api_key = os.environ["HANDSHAKE_API_KEY"]
+
+  response = requests.get(
+      "https://edu-api.joinhandshake.com/v1/students",
+      headers={"x-api-key": api_key},
+      params={"page_size": 10},
+  )
+
+  data = response.json()
+  ```
+
+  ```javascript Node.js (fetch)
+  const apiKey = process.env.HANDSHAKE_API_KEY;
+
+  const response = await fetch(
+    "https://edu-api.joinhandshake.com/v1/students?page_size=10",
+    {
+      method: "GET",
+      headers: {
+        "x-api-key": apiKey,
+      },
+    }
+  );
+
+  const data = await response.json();
+  ```
+</CodeGroup>
+
+## Keeping your key secure
+
+<Warning>
+  Never hard-code your API key in source code or commit it to version control. If your key is exposed, anyone who obtains it can access your institution's data. Store the key in an environment variable or a secrets manager, and load it at runtime. If you believe your key has been compromised, contact your Handshake account manager immediately to have it rotated.
+</Warning>
+
+## Authentication errors
+
+If your request is not properly authenticated, the API returns one of the following HTTP error codes:
+
+| Status code | Meaning |
+|---|---|
+| `401 Unauthorized` | The `x-api-key` header is missing or the key provided is invalid or expired. Check that you're including the header and that the key value is correct. |
+| `403 Forbidden` | The API key is valid, but it does not have permission to access the requested resource. Contact your Handshake account manager if you need access to additional endpoints or data scopes. |

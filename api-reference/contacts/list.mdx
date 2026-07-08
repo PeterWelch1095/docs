@@ -1,0 +1,127 @@
+---
+title: "List Contacts: Employer Representatives | Handshake API"
+sidebarTitle: "List Contacts"
+description: "GET /v1/contacts — Returns employer contacts (recruiter and hiring manager profiles) associated with employers that have engaged with your institution."
+---
+
+Contacts are employer representatives — recruiters, hiring managers, and other staff — who have connected with your institution on Handshake. The List Contacts endpoint returns these profiles along with their employer associations, giving you a view of the individual people behind the organizations that engage with your students. You can use this data to build recruiter directories, support relationship management workflows, or audit engagement activity across your institution.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/contacts
+```
+
+## Query parameters
+
+<ParamField query="page_size" type="integer">
+  Number of results to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  Cursor pointing to the start of the next page. Use the `next_cursor` value returned by the previous response to retrieve the following page. Omit this parameter to start from the beginning of the result set.
+</ParamField>
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 timestamp (e.g. `2024-01-15T00:00:00Z`). When provided, only contacts updated at or after this time are returned. Use this to poll for incremental changes.
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  Column to sort results by. Accepted values: `id`, `updated_at`, `last_name`. Defaults to `id`.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  Sort direction. Accepted values: `asc`, `desc`. Defaults to `asc`.
+</ParamField>
+
+## Response fields
+
+| Field         | Type    | Description                                                                  |
+|---------------|---------|------------------------------------------------------------------------------|
+| `results`     | array   | Array of contact objects matching the query. See fields below.               |
+| `next_cursor` | string  | Cursor to pass as `page_cursor` to retrieve the next page. `null` when there are no further pages. |
+| `total_count` | integer | Total number of contacts matching the query across all pages.                |
+
+### Contact object
+
+<Expandable title="Contact object fields">
+  <ResponseField name="id" type="string">
+    Unique Handshake identifier for the contact.
+  </ResponseField>
+
+  <ResponseField name="first_name" type="string">
+    Contact's first name.
+  </ResponseField>
+
+  <ResponseField name="last_name" type="string">
+    Contact's last name.
+  </ResponseField>
+
+  <ResponseField name="email" type="string">
+    Contact's email address. Only present when the contact has opted in to sharing their contact details with your institution. See the note below.
+  </ResponseField>
+
+  <ResponseField name="title" type="string">
+    Contact's job title at their employer organization (e.g. `"Campus Recruiter"`, `"Hiring Manager"`). May be `null` if not provided.
+  </ResponseField>
+
+  <ResponseField name="employer_id" type="string">
+    Handshake ID of the employer organization this contact is associated with. Use this to look up the full employer record via the [Get Employer](/api-reference/employers/get) endpoint.
+  </ResponseField>
+
+  <ResponseField name="employer_name" type="string">
+    Display name of the employer organization this contact is associated with.
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    ISO 8601 timestamp indicating when the contact record was created in Handshake.
+  </ResponseField>
+
+  <ResponseField name="updated_at" type="string">
+    ISO 8601 timestamp indicating when the contact record was last updated.
+  </ResponseField>
+</Expandable>
+
+<Note>
+  Contact email addresses are only included when the contact has explicitly opted in to sharing their contact details with your institution. If a contact has not opted in, the `email` field is omitted from the response object entirely.
+</Note>
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/contacts?page_size=2&sorting_column=last_name&sorting_order=asc" \
+  --header "x-api-key: YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "results": [
+    {
+      "id": "contact_7g8h9i",
+      "first_name": "Jordan",
+      "last_name": "Ellis",
+      "email": "jordan.ellis@acmetech.example.com",
+      "title": "Campus Recruiter",
+      "employer_id": "employer_1a2b3c",
+      "employer_name": "Acme Technologies",
+      "created_at": "2022-09-01T13:30:00Z",
+      "updated_at": "2024-03-05T10:14:22Z"
+    },
+    {
+      "id": "contact_2j3k4l",
+      "first_name": "Morgan",
+      "last_name": "Nguyen",
+      "title": "Talent Acquisition Manager",
+      "employer_id": "employer_4d5e6f",
+      "employer_name": "Bright Path Consulting",
+      "created_at": "2021-11-22T09:00:00Z",
+      "updated_at": "2023-12-18T16:47:55Z"
+    }
+  ],
+  "next_cursor": "cursor_def456uvw",
+  "total_count": 312
+}
+```

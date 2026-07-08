@@ -1,0 +1,131 @@
+---
+title: "List Students — Handshake Integration API"
+sidebarTitle: "List Students"
+description: "GET /v1/students — Returns a paginated list of student profiles scoped to your institution. Supports filtering by updated_since and sorting."
+---
+
+The List Students endpoint returns paginated student profiles from your institution's Handshake account. Each record contains core identity and academic fields. Use `updated_since` to implement incremental syncs and retrieve only records that have changed since your last pull.
+
+```
+GET https://edu-api.joinhandshake.com/v1/students
+```
+
+## Query Parameters
+
+<ParamField query="page_size" type="integer">
+  Number of student records to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  Opaque pagination cursor. Pass the `next_cursor` value from the previous response to retrieve the next page. Omit this parameter to start from the beginning.
+</ParamField>
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 datetime (e.g. `2024-01-15T00:00:00Z`). When provided, only students updated at or after this timestamp are returned. Use this parameter to sync changes incrementally.
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  Field to sort results by. Accepted values: `id`, `updated_at`, `created_at`, `graduation_year`.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  Sort direction. Accepted values: `asc` (ascending) or `desc` (descending).
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="results" type="array">
+  Array of student objects matching the query. See the student object fields below for the shape of each record.
+
+  <Expandable title="Student object">
+    <ResponseField name="id" type="string">
+      Unique Handshake identifier for the student.
+    </ResponseField>
+
+    <ResponseField name="first_name" type="string">
+      Student's first name.
+    </ResponseField>
+
+    <ResponseField name="last_name" type="string">
+      Student's last name.
+    </ResponseField>
+
+    <ResponseField name="email" type="string">
+      Student's institutional email address.
+    </ResponseField>
+
+    <ResponseField name="graduation_year" type="integer">
+      Expected or actual graduation year (e.g. `2025`).
+    </ResponseField>
+
+    <ResponseField name="major" type="string">
+      Student's declared major or primary field of study.
+    </ResponseField>
+
+    <ResponseField name="school_year" type="string">
+      Academic class standing. Common values: `Freshman`, `Sophomore`, `Junior`, `Senior`, `Graduate`.
+    </ResponseField>
+
+    <ResponseField name="gpa" type="number | null">
+      Student's self-reported GPA on a 4.0 scale. Returns `null` if not provided.
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 datetime when the student record was created in Handshake.
+    </ResponseField>
+
+    <ResponseField name="updated_at" type="string">
+      ISO 8601 datetime when the student record was last updated.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="next_cursor" type="string | null">
+  Cursor to pass as `page_cursor` on the next request to retrieve the following page. Returns `null` when you have reached the last page.
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of student records matching the query, across all pages.
+</ResponseField>
+
+## Example Request
+
+```bash
+curl "https://edu-api.joinhandshake.com/v1/students?page_size=2&sorting_column=updated_at&sorting_order=desc" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+## Example Response
+
+```json
+{
+  "results": [
+    {
+      "id": "9182734",
+      "first_name": "Maya",
+      "last_name": "Patel",
+      "email": "maya.patel@university.edu",
+      "graduation_year": 2025,
+      "major": "Computer Science",
+      "school_year": "Senior",
+      "gpa": 3.7,
+      "created_at": "2022-08-30T12:00:00Z",
+      "updated_at": "2024-03-10T09:15:42Z"
+    },
+    {
+      "id": "9182701",
+      "first_name": "Jordan",
+      "last_name": "Kim",
+      "email": "jordan.kim@university.edu",
+      "graduation_year": 2026,
+      "major": "Economics",
+      "school_year": "Junior",
+      "gpa": null,
+      "created_at": "2023-01-12T08:30:00Z",
+      "updated_at": "2024-03-09T17:44:11Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6OTE4MjcwMX0=",
+  "total_count": 5340
+}
+```

@@ -1,0 +1,76 @@
+---
+title: "Get Employer by ID — Handshake Education API Reference"
+sidebarTitle: "Get Employer"
+description: "GET /v1/employers/{id} — Retrieve a single employer organization by its Handshake ID, including company profile, industry, and size details."
+---
+
+Retrieve full details for a single employer using their Handshake employer ID. Use this endpoint when you need to look up a specific organization — for example, after receiving an employer ID from a job posting or career fair registration — and want the complete profile rather than paginating through the full list.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/employers/{id}
+```
+
+## Path parameters
+
+<ParamField path="id" type="string" required>
+  The Handshake employer ID. You can obtain this value from the `id` field returned by the [List Employers](/api-reference/employers/list) endpoint.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="id" type="string">
+  Unique Handshake identifier for the employer.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Legal or display name of the employer organization.
+</ResponseField>
+
+<ResponseField name="industry" type="string">
+  Industry classification for the employer (e.g. `"Technology"`, `"Healthcare"`).
+</ResponseField>
+
+<ResponseField name="size" type="string">
+  Employee count range for the organization. Possible values include `"1-10"`, `"11-50"`, `"51-200"`, `"201-500"`, `"501-1000"`, `"1001-5000"`, `"5001+"`.
+</ResponseField>
+
+<ResponseField name="website" type="string">
+  URL of the employer's public website. May be `null` if not provided.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Short description of the employer as entered on their Handshake profile. May be `null` if not provided.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp indicating when the employer record was created in Handshake.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 timestamp indicating when the employer record was last updated.
+</ResponseField>
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/employers/employer_1a2b3c" \
+  --header "x-api-key: YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "id": "employer_1a2b3c",
+  "name": "Acme Technologies",
+  "industry": "Technology",
+  "size": "201-500",
+  "website": "https://www.acmetech.example.com",
+  "description": "Acme Technologies builds cloud infrastructure tools for engineering teams.",
+  "created_at": "2021-03-12T08:45:00Z",
+  "updated_at": "2024-02-28T14:22:10Z"
+}
+```

@@ -1,0 +1,39 @@
+---
+title: "Handshake Integration API: Early Career Recruiting Data"
+sidebarTitle: "Home"
+description: "Connect your systems to Handshake's early career recruiting platform. Access student data, job postings, applications, events, and more through our REST API."
+---
+
+The Handshake Integration API gives you programmatic access to the data that powers early career recruiting. Whether you're building an analytics pipeline, syncing student profiles into an ATS, or pulling job and application data into an internal dashboard, the API lets you work directly with the students, employers, jobs, events, and career fair information in your institution's Handshake account.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Make your first API call in minutes
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Set up your API key
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore all endpoints
+  </Card>
+  <Card title="Core Concepts" icon="book" href="/concepts/data-model">
+    Understand the data model
+  </Card>
+</CardGroup>
+
+## How it works
+
+<Steps>
+  <Step title="Request API access">
+    Reach out to your Handshake account manager to request integration API access for your institution. Access is granted to approved integration partners.
+  </Step>
+  <Step title="Get your API key">
+    Once approved, obtain your API key from your Handshake account manager. Store it securely as an environment variable.
+  </Step>
+  <Step title="Make your first call">
+    Pass your API key in the `x-api-key` request header and call any endpoint under the base URL `https://edu-api.joinhandshake.com/v1/`. See the [Quickstart](/quickstart) for a working example.
+  </Step>
+  <Step title="Explore the full API">
+    Browse the [API Reference](/api-reference/overview) for the complete list of endpoints, query parameters, and response schemas. Use cursor-based pagination and the `updated_since` parameter to build efficient, incremental syncs.
+  </Step>
+</Steps>

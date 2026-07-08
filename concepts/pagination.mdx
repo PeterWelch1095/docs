@@ -1,0 +1,72 @@
+---
+title: "Paginating Through Handshake API Results"
+sidebarTitle: "Pagination"
+description: "The Handshake API uses cursor-based pagination. Learn how to use page_cursor and page_size to iterate through large data sets efficiently."
+---
+
+All list endpoints in the Handshake API return paginated results using cursor-based pagination. This approach is efficient for large datasets and supports incremental syncs — you navigate forward through results by passing an opaque cursor value returned by each response, rather than using numeric page offsets.
+
+## Request parameters
+
+<ParamField query="page_size" type="integer">
+  Number of results to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  An opaque cursor obtained from the `next_cursor` field of a previous response. Omit this parameter on your first request to begin from the start of the result set.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="results" type="array">
+  Array of resource objects for the current page.
+</ResponseField>
+
+<ResponseField name="next_cursor" type="string | null">
+  Cursor to pass as `page_cursor` in your next request to retrieve the following page. Returns `null` when you have reached the last page and no further results exist.
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of records matching your query, across all pages.
+</ResponseField>
+
+## Iterating all pages
+
+To retrieve every record from a list endpoint, loop over pages until `next_cursor` is `null`. The following Python example demonstrates this pattern:
+
+```python
+import requests
+
+BASE_URL = "https://edu-api.joinhandshake.com/v1"
+HEADERS = {"x-api-key": "YOUR_API_KEY"}
+
+def fetch_all_students():
+    results = []
+    params = {"page_size": 100}
+
+    while True:
+        response = requests.get(f"{BASE_URL}/students", headers=HEADERS, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        results.extend(data["results"])
+
+        next_cursor = data.get("next_cursor")
+        if not next_cursor:
+            # No more pages — iteration complete
+            break
+
+        # Pass the cursor to fetch the next page
+        params["page_cursor"] = next_cursor
+
+    return results
+```
+
+## Best practices
+
+- **Always check for a `null` `next_cursor`** to detect the last page. Do not rely on `results` being empty as the only stopping condition.
+- **Use `page_size=100` for bulk exports.** Fetching the maximum number of records per request minimizes the total number of API calls your integration makes, which reduces both latency and the risk of hitting rate limits.
+
+<Tip>
+Store the cursor value if you need to resume a sync that was interrupted. You can restart from the last successfully processed cursor rather than re-fetching all data from the beginning.
+</Tip>

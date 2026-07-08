@@ -1,0 +1,67 @@
+---
+title: "Get Event by ID — Handshake Integration API Reference"
+sidebarTitle: "Get Event"
+description: "GET /v1/events/{id} — Retrieve a single event record by its Handshake ID, including schedule, format, and hosting employer details."
+---
+
+Retrieve full details for a single event using its Handshake event ID. Use this endpoint to get the complete record for a specific event, including its schedule, virtual or in-person format, and the employer hosting it.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/events/{id}
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Path parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | The Handshake event ID. |
+
+## Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the event. |
+| `title` | string | Event title as entered by the organizer. |
+| `event_type` | string | Category of the event, such as `info_session`, `workshop`, or `networking`. |
+| `start_at` | string (ISO 8601) | Scheduled start time of the event. |
+| `end_at` | string (ISO 8601) | Scheduled end time of the event. |
+| `virtual` | boolean | `true` if the event is held online; `false` if in-person. |
+| `employer_id` | string | Handshake ID of the employer hosting the event. |
+| `employer_name` | string | Display name of the hosting employer. |
+| `created_at` | string (ISO 8601) | Timestamp when the event record was created. |
+| `updated_at` | string (ISO 8601) | Timestamp when the event record was last updated. |
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/events/5529104" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "id": "5529104",
+  "title": "Acme Corp Engineering Info Session",
+  "event_type": "info_session",
+  "start_at": "2024-04-10T18:00:00Z",
+  "end_at": "2024-04-10T19:30:00Z",
+  "virtual": true,
+  "employer_id": "30192",
+  "employer_name": "Acme Corp",
+  "created_at": "2024-03-01T10:00:00Z",
+  "updated_at": "2024-03-15T11:30:00Z"
+}
+```

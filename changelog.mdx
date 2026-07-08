@@ -1,0 +1,42 @@
+---
+title: "Handshake Integration API — Changelog and Release Notes"
+sidebarTitle: "Changelog"
+description: "Release notes and version history for the Handshake Integration API, including new endpoints, bug fixes, and breaking change notices."
+---
+
+This changelog documents updates to the Handshake Integration API. Subscribe to release notifications through your developer portal to stay informed about new endpoints, breaking changes, and deprecation notices.
+
+<Note>
+  The API is in beta. Breaking changes will be announced at least 30 days in advance via email to registered integration partners.
+</Note>
+
+## 2024-11-01
+
+**Added**
+
+- `GET /v1/first_destination_responses` endpoint for retrieving student post-graduation outcome survey data.
+- `GET /v1/student_skills` endpoint for accessing skills associated with student profiles.
+- `GET /v1/student_interests` endpoint for accessing interest categories associated with student profiles.
+
+**Fixed**
+
+- Pagination cursor no longer retains state from a previous query when new filter parameters are supplied. Starting a new filtered request now correctly resets the cursor to the beginning of the result set.
+
+---
+
+## 2024-09-15
+
+**Added**
+
+- `sorting_column` and `sorting_order` query parameters on all list endpoints, allowing you to control the field and direction used to order results.
+- `GET /v1/career_fair_employer_engagement` endpoint for retrieving employer activity and engagement data associated with career fairs.
+- Improved error messages for `400 Bad Request` responses. The `message` field now identifies the specific parameter that caused the error where possible.
+
+---
+
+## 2024-07-01
+
+**Added**
+
+- Initial beta release of the Handshake Integration API.
+- Available endpoints: `students`, `jobs`, `applications`, `events`, `career_fairs`, `employers`, `contacts`.

@@ -1,0 +1,65 @@
+---
+title: "Get Job by ID — Handshake Integration API Reference"
+sidebarTitle: "Get Job"
+description: "GET /v1/jobs/{id} — Retrieve a single job posting by its Handshake ID, including title, employer, job type, status, and description."
+---
+
+Retrieve the full details of a single job posting using its Handshake job ID. Use this endpoint when you need the complete record for a specific job, such as after receiving an ID from the List Jobs response or a webhook event.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/jobs/{id}
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Path parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | The Handshake job ID. |
+
+## Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the job. |
+| `title` | string | Job title as entered by the employer. |
+| `employer_id` | string | Unique identifier of the employer who posted the job. |
+| `employer_name` | string | Display name of the employer. |
+| `job_type` | string | Type of role. One of: `full_time`, `internship`, `part_time`, `co_op`. |
+| `status` | string | Current posting status. One of: `active`, `expired`, `draft`. |
+| `description` | string | Full job description text. |
+| `created_at` | string (ISO 8601) | Timestamp when the job was created. |
+| `updated_at` | string (ISO 8601) | Timestamp when the job was last updated. |
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/jobs/8471023" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "id": "8471023",
+  "title": "Software Engineering Intern",
+  "employer_id": "30192",
+  "employer_name": "Acme Corp",
+  "job_type": "internship",
+  "status": "active",
+  "description": "Join our engineering team for a 12-week summer internship working on distributed systems.",
+  "created_at": "2024-02-01T09:15:00Z",
+  "updated_at": "2024-03-10T14:22:00Z"
+}
+```

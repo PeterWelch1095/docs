@@ -1,0 +1,101 @@
+---
+title: "List Applications — Handshake Integration API Reference"
+sidebarTitle: "List Applications"
+description: "GET /v1/applications — Returns paginated student job application records including student ID, job ID, application status, and timestamps."
+---
+
+The List Applications endpoint returns records of student applications to jobs posted on Handshake. Each record links a student to a job along with the current application status. Use `updated_since` to incrementally sync application activity since your last request, or use `sorting_column=status` to group records by pipeline stage.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/applications
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Query parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page_size` | integer | Number of results per page. Maximum `100`. |
+| `page_cursor` | string | Cursor returned in a previous response as `next_cursor`. Pass this value to retrieve the next page. |
+| `updated_since` | string (ISO 8601) | Return only records updated at or after this timestamp. Example: `2024-01-15T00:00:00Z`. |
+| `sorting_column` | string | Field to sort results by. Accepted values: `id`, `updated_at`, `created_at`, `status`. |
+| `sorting_order` | string | Sort direction. Accepted values: `asc`, `desc`. |
+
+## Response
+
+| Field | Type | Description |
+|---|---|---|
+| `results` | array | Array of application objects for the current page. |
+| `next_cursor` | string \| null | Cursor for the next page of results. `null` when there are no further pages. |
+| `total_count` | integer | Total number of application records matching the query. |
+
+### Application object fields
+
+<Expandable title="Application object">
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the application. |
+| `student_id` | string | Handshake ID of the student who submitted the application. |
+| `job_id` | string | Handshake ID of the job the student applied to. |
+| `status` | string | Current pipeline status. See [Application status values](#application-status-values) below. |
+| `created_at` | string (ISO 8601) | Timestamp when the application was submitted. |
+| `updated_at` | string (ISO 8601) | Timestamp when the application was last updated. |
+
+</Expandable>
+
+## Application status values
+
+| Status | Description |
+|---|---|
+| `applied` | The student submitted an application and it is awaiting employer review. |
+| `reviewed` | The employer has viewed the application. |
+| `interview` | The student has been invited to or is scheduled for an interview. |
+| `offer` | The employer has extended a job offer to the student. |
+| `hired` | The student accepted an offer and the position is filled. |
+| `rejected` | The employer did not move forward with the student's application. |
+| `withdrawn` | The student withdrew their application before a decision was made. |
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/applications?page_size=50&updated_since=2024-03-01T00:00:00Z&sorting_column=updated_at&sorting_order=desc" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "results": [
+    {
+      "id": "19274650",
+      "student_id": "4401923",
+      "job_id": "8471023",
+      "status": "interview",
+      "created_at": "2024-03-05T13:42:00Z",
+      "updated_at": "2024-03-11T09:00:00Z"
+    },
+    {
+      "id": "19274491",
+      "student_id": "4408812",
+      "job_id": "8470888",
+      "status": "applied",
+      "created_at": "2024-03-04T17:10:00Z",
+      "updated_at": "2024-03-04T17:10:00Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6IjE5Mjc0NDkxIn0=",
+  "total_count": 1087
+}
+```

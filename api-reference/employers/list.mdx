@@ -1,0 +1,122 @@
+---
+title: "List Employers — Handshake Education API Reference"
+sidebarTitle: "List Employers"
+description: "Use GET /v1/employers to retrieve a paginated list of employer organizations that have engaged with your institution on Handshake."
+---
+
+The List Employers endpoint returns employer organizations that have engaged with your institution on Handshake — including companies that have posted jobs, attended career fairs, or hosted events. Results are paginated and can be filtered by last-updated time, making this endpoint useful for keeping a downstream system in sync with Handshake employer data.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/employers
+```
+
+## Query parameters
+
+<ParamField query="page_size" type="integer">
+  Number of results to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  Cursor pointing to the start of the next page. Use the `next_cursor` value returned by the previous response to retrieve the following page. Omit this parameter to start from the beginning of the result set.
+</ParamField>
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 timestamp (e.g. `2024-01-15T00:00:00Z`). When provided, only employers updated at or after this time are returned. Use this to poll for incremental changes.
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  Column to sort results by. Accepted values: `id`, `updated_at`, `name`. Defaults to `id`.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  Sort direction. Accepted values: `asc`, `desc`. Defaults to `asc`.
+</ParamField>
+
+## Response fields
+
+| Field         | Type    | Description                                                                 |
+|---------------|---------|-----------------------------------------------------------------------------|
+| `results`     | array   | Array of employer objects matching the query. See fields below.             |
+| `next_cursor` | string  | Cursor to pass as `page_cursor` to retrieve the next page. `null` when there are no further pages. |
+| `total_count` | integer | Total number of employers matching the query across all pages.              |
+
+### Employer object
+
+<Expandable title="Employer object fields">
+  <ResponseField name="id" type="string">
+    Unique Handshake identifier for the employer.
+  </ResponseField>
+
+  <ResponseField name="name" type="string">
+    Legal or display name of the employer organization.
+  </ResponseField>
+
+  <ResponseField name="industry" type="string">
+    Industry classification for the employer (e.g. `"Technology"`, `"Healthcare"`).
+  </ResponseField>
+
+  <ResponseField name="size" type="string">
+    Employee count range for the organization. Possible values include `"1-10"`, `"11-50"`, `"51-200"`, `"201-500"`, `"501-1000"`, `"1001-5000"`, `"5001+"`.
+  </ResponseField>
+
+  <ResponseField name="website" type="string">
+    URL of the employer's public website. May be `null` if not provided.
+  </ResponseField>
+
+  <ResponseField name="description" type="string">
+    Short description of the employer as entered on their Handshake profile. May be `null` if not provided.
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    ISO 8601 timestamp indicating when the employer record was created in Handshake.
+  </ResponseField>
+
+  <ResponseField name="updated_at" type="string">
+    ISO 8601 timestamp indicating when the employer record was last updated.
+  </ResponseField>
+</Expandable>
+
+<Note>
+  Employer labels are not included in this response. A separate endpoint exists for retrieving labels associated with employer records.
+</Note>
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/employers?page_size=2&sorting_column=name&sorting_order=asc" \
+  --header "x-api-key: YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "results": [
+    {
+      "id": "employer_1a2b3c",
+      "name": "Acme Technologies",
+      "industry": "Technology",
+      "size": "201-500",
+      "website": "https://www.acmetech.example.com",
+      "description": "Acme Technologies builds cloud infrastructure tools for engineering teams.",
+      "created_at": "2021-03-12T08:45:00Z",
+      "updated_at": "2024-02-28T14:22:10Z"
+    },
+    {
+      "id": "employer_4d5e6f",
+      "name": "Bright Path Consulting",
+      "industry": "Consulting",
+      "size": "51-200",
+      "website": "https://www.brightpathconsulting.example.com",
+      "description": "Bright Path Consulting provides strategy and operations advisory services to Fortune 500 clients.",
+      "created_at": "2020-07-19T11:00:00Z",
+      "updated_at": "2024-01-15T09:05:44Z"
+    }
+  ],
+  "next_cursor": "cursor_abc123xyz",
+  "total_count": 847
+}
+```

@@ -1,0 +1,83 @@
+---
+title: "Get Student by ID — Handshake Integration API"
+sidebarTitle: "Get Student"
+description: "GET /v1/students/{id} — Retrieve a single student profile by their Handshake ID. Returns full profile including graduation year, major, and contact info."
+---
+
+Retrieve a single student's full profile using their Handshake student ID. This endpoint is useful when you already have a student's ID from a previous list response and need to fetch their current record directly, without paginating through the full list.
+
+```
+GET https://edu-api.joinhandshake.com/v1/students/{id}
+```
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The Handshake student ID. You can obtain this value from the `id` field in the [List Students](/api-reference/students/list) response.
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="id" type="string">
+  Unique Handshake identifier for the student.
+</ResponseField>
+
+<ResponseField name="first_name" type="string">
+  Student's first name.
+</ResponseField>
+
+<ResponseField name="last_name" type="string">
+  Student's last name.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Student's institutional email address.
+</ResponseField>
+
+<ResponseField name="graduation_year" type="integer">
+  Expected or actual graduation year (e.g. `2025`).
+</ResponseField>
+
+<ResponseField name="major" type="string">
+  Student's declared major or primary field of study.
+</ResponseField>
+
+<ResponseField name="school_year" type="string">
+  Academic class standing. Common values: `Freshman`, `Sophomore`, `Junior`, `Senior`, `Graduate`.
+</ResponseField>
+
+<ResponseField name="gpa" type="number | null">
+  Student's self-reported GPA on a 4.0 scale. Returns `null` if not provided.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 datetime when the student record was created in Handshake.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 datetime when the student record was last updated.
+</ResponseField>
+
+## Example Request
+
+```bash
+curl "https://edu-api.joinhandshake.com/v1/students/9182734" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+## Example Response
+
+```json
+{
+  "id": "9182734",
+  "first_name": "Maya",
+  "last_name": "Patel",
+  "email": "maya.patel@university.edu",
+  "graduation_year": 2025,
+  "major": "Computer Science",
+  "school_year": "Senior",
+  "gpa": 3.7,
+  "created_at": "2022-08-30T12:00:00Z",
+  "updated_at": "2024-03-10T09:15:42Z"
+}
+```

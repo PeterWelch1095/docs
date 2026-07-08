@@ -1,0 +1,69 @@
+---
+title: "Filtering and Sorting Handshake API Results"
+sidebarTitle: "Filtering"
+description: "Filter Handshake API results by date, sort by column, and control ordering. Use updated_since for incremental syncs to minimize data transfer."
+---
+
+Handshake API list endpoints support filtering and sorting to help you retrieve exactly the records you need. Rather than pulling your entire dataset on every sync, you can use `updated_since` to fetch only records that have changed since your last request, and use sorting parameters to control the order in which results are returned.
+
+## Available query parameters
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 datetime string. When provided, the endpoint returns only records that were updated at or after this timestamp. This parameter is ideal for incremental sync patterns where you want to avoid re-fetching unchanged data.
+
+  Example: `2024-01-15T00:00:00Z`
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  The column name to sort results by. Available values vary by endpoint. Commonly supported values include `id`, `updated_at`, and `created_at`. Check individual endpoint references for the full list of sortable columns.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  The direction of the sort. Accepts `asc` (ascending) or `desc` (descending). Defaults to `asc` when not specified.
+</ParamField>
+
+## Incremental sync with `updated_since`
+
+Use `updated_since` to fetch only the records that have changed since your previous sync. Before making the request, capture the current timestamp and store it as your next checkpoint. This ensures no updates are missed even if records change while you are paginating.
+
+```bash
+# Store the current timestamp before making the request
+CHECKPOINT="2024-06-01T00:00:00Z"
+
+curl "https://edu-api.joinhandshake.com/v1/students?updated_since=${CHECKPOINT}&page_size=100" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+In practice, your sync loop should:
+
+<Steps>
+  <Step title="Read your stored checkpoint">
+    Load the timestamp from your last successful sync run.
+  </Step>
+  <Step title="Request records updated since the checkpoint">
+    Issue the request with `updated_since` set to that checkpoint timestamp.
+  </Step>
+  <Step title="Process and store returned records">
+    Upsert all records returned across every page into your local data store.
+  </Step>
+  <Step title="Save the new checkpoint">
+    Save the timestamp from **before** the request started as your new checkpoint, so any records updated during the sync are caught on the next run.
+  </Step>
+</Steps>
+
+## Sorting
+
+To control the order in which results are returned, use `sorting_column` and `sorting_order`. The following example retrieves students sorted by `updated_at` in descending order — most recently updated first:
+
+```bash
+curl "https://edu-api.joinhandshake.com/v1/students?sorting_column=updated_at&sorting_order=desc&page_size=100" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+<Tip>
+For reliable incremental syncs, combine `updated_since` with `sorting_column=updated_at` and `sorting_order=asc`. This ensures you process records in chronological order and can safely resume from a cursor if your sync is interrupted.
+
+```
+?updated_since=2024-06-01T00:00:00Z&sorting_column=updated_at&sorting_order=asc&page_size=100
+```
+</Tip>

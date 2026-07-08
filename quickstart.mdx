@@ -1,0 +1,68 @@
+---
+title: "Get Started with the Handshake Integration API"
+sidebarTitle: "Quickstart"
+description: "Learn how to authenticate and make your first Handshake API request in under five minutes. Fetch a list of students from your institution's account."
+---
+
+This quickstart walks you through making your first API call to Handshake. By the end, you'll have a working authenticated request that returns a page of student records from your institution's account. All you need is an API key and a tool that can send HTTP requests, such as curl, Postman, or your preferred programming language.
+
+<Steps>
+  <Step title="Get your API key">
+    Contact your Handshake account manager to obtain an API key for your integration. Store the key in an environment variable — never hard-code it in your source files.
+
+    ```bash
+    export HANDSHAKE_API_KEY="your_api_key_here"
+    ```
+  </Step>
+  <Step title="Make your first request">
+    Send a `GET` request to the `/v1/students` endpoint, passing your API key in the `x-api-key` header. The `page_size` parameter limits how many records are returned in a single response.
+
+    ```bash
+    curl -X GET "https://edu-api.joinhandshake.com/v1/students?page_size=10" \
+      -H "x-api-key: YOUR_API_KEY"
+    ```
+  </Step>
+  <Step title="Parse the response">
+    A successful response returns a JSON object with a `results` array containing student records and a `next_cursor` value you'll use to fetch the next page.
+
+    ```json
+    {
+      "results": [
+        {
+          "id": "8471023",
+          "first_name": "Jordan",
+          "last_name": "Rivera",
+          "email": "jrivera@university.edu",
+          "graduation_year": 2025,
+          "major": "Computer Science",
+          "updated_at": "2024-11-15T10:32:00Z"
+        },
+        {
+          "id": "8471024",
+          "first_name": "Priya",
+          "last_name": "Nair",
+          "email": "pnair@university.edu",
+          "graduation_year": 2026,
+          "major": "Data Science",
+          "updated_at": "2024-11-14T08:17:00Z"
+        }
+      ],
+      "next_cursor": "eyJpZCI6Ijg0NzEwMjQiLCJkaXJlY3Rpb24iOiJuZXh0In0="
+    }
+    ```
+
+    If `next_cursor` is present in the response, there are more records available. If it is absent or `null`, you have reached the last page.
+  </Step>
+  <Step title="Paginate results">
+    To fetch the next page, pass the `next_cursor` value from the previous response as the `page_cursor` query parameter in your next request. Keep repeating until no `next_cursor` is returned.
+
+    ```bash
+    curl -X GET "https://edu-api.joinhandshake.com/v1/students?page_size=10&page_cursor=eyJpZCI6Ijg0NzEwMjQiLCJkaXJlY3Rpb24iOiJuZXh0In0=" \
+      -H "x-api-key: YOUR_API_KEY"
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  For recurring sync jobs, use the `updated_since` query parameter instead of paginating through all records on every run. Pass the ISO 8601 timestamp of your last successful sync — for example, `?updated_since=2024-11-01T00:00:00Z` — to retrieve only records that have changed since then. This significantly reduces the volume of data transferred and speeds up your pipeline.
+</Tip>

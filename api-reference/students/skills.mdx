@@ -1,0 +1,108 @@
+---
+title: "List Student Skills — Handshake Integration API"
+sidebarTitle: "Student Skills"
+description: "GET /v1/student_skills — Returns skills listed on student profiles, such as programming languages, tools, and competencies added by students."
+---
+
+The student skills endpoint returns skills that students have added to their Handshake profiles, such as programming languages, software tools, and professional competencies. Each record associates one skill with one student. You can use this data to analyze skill distribution across your student population, identify capability gaps, or build matching logic that surfaces qualified candidates to employers.
+
+```
+GET https://edu-api.joinhandshake.com/v1/student_skills
+```
+
+## Query Parameters
+
+<ParamField query="page_size" type="integer">
+  Number of skill records to return per page. Maximum value is `100`. Defaults to `25`.
+</ParamField>
+
+<ParamField query="page_cursor" type="string">
+  Opaque pagination cursor. Pass the `next_cursor` value from the previous response to retrieve the next page.
+</ParamField>
+
+<ParamField query="updated_since" type="string">
+  ISO 8601 datetime (e.g. `2024-01-15T00:00:00Z`). When provided, only skill records created or updated at or after this timestamp are returned.
+</ParamField>
+
+<ParamField query="sorting_column" type="string">
+  Field to sort results by. Accepted values: `id`, `updated_at`, `created_at`.
+</ParamField>
+
+<ParamField query="sorting_order" type="string">
+  Sort direction. Accepted values: `asc` (ascending) or `desc` (descending).
+</ParamField>
+
+## Response Fields
+
+<ResponseField name="results" type="array">
+  Array of student skill objects. Each object links a single skill to a single student.
+
+  <Expandable title="Skill object">
+    <ResponseField name="id" type="string">
+      Unique identifier for this skill assignment record.
+    </ResponseField>
+
+    <ResponseField name="student_id" type="string">
+      Handshake ID of the student who listed this skill. Use this to join with records from the [List Students](/api-reference/students/list) endpoint.
+    </ResponseField>
+
+    <ResponseField name="skill_id" type="string">
+      Unique identifier of the skill itself. Consistent across all students who list the same skill.
+    </ResponseField>
+
+    <ResponseField name="skill_name" type="string">
+      Human-readable name of the skill as it appears on the student's profile (e.g. `"Python"`, `"Microsoft Excel"`, `"Project Management"`).
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 datetime when the student added this skill to their profile.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="next_cursor" type="string | null">
+  Cursor to pass as `page_cursor` on the next request to retrieve the following page. Returns `null` when you have reached the last page.
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of skill records matching the query, across all pages.
+</ResponseField>
+
+## Example Request
+
+```bash
+curl "https://edu-api.joinhandshake.com/v1/student_skills?page_size=3&updated_since=2024-01-01T00:00:00Z" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+## Example Response
+
+```json
+{
+  "results": [
+    {
+      "id": "334521",
+      "student_id": "9182734",
+      "skill_id": "201",
+      "skill_name": "Python",
+      "created_at": "2022-10-01T11:00:00Z"
+    },
+    {
+      "id": "334520",
+      "student_id": "9182734",
+      "skill_id": "215",
+      "skill_name": "SQL",
+      "created_at": "2022-10-01T11:00:00Z"
+    },
+    {
+      "id": "334519",
+      "student_id": "9182701",
+      "skill_id": "308",
+      "skill_name": "Microsoft Excel",
+      "created_at": "2023-02-20T08:45:00Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6MzM0NTE5fQ==",
+  "total_count": 31076
+}
+```

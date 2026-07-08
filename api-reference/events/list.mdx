@@ -1,0 +1,101 @@
+---
+title: "List Events — Handshake Integration API Reference"
+sidebarTitle: "List Events"
+description: "GET /v1/events — Returns a paginated list of events at your institution including virtual and in-person events, info sessions, and workshops."
+---
+
+The List Events endpoint returns events hosted at or open to your institution on Handshake, including employer info sessions, workshops, and networking events. Use the `updated_since` parameter to sync changes incrementally, or filter by `sorting_column=start_at` to retrieve events in chronological order.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/events
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Query parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page_size` | integer | Number of results per page. Maximum `100`. |
+| `page_cursor` | string | Cursor returned in a previous response as `next_cursor`. Pass this value to retrieve the next page. |
+| `updated_since` | string (ISO 8601) | Return only records updated at or after this timestamp. Example: `2024-01-15T00:00:00Z`. |
+| `sorting_column` | string | Field to sort results by. Accepted values: `id`, `updated_at`, `start_at`. |
+| `sorting_order` | string | Sort direction. Accepted values: `asc`, `desc`. |
+
+## Response
+
+| Field | Type | Description |
+|---|---|---|
+| `results` | array | Array of event objects for the current page. |
+| `next_cursor` | string \| null | Cursor for the next page of results. `null` when there are no further pages. |
+| `total_count` | integer | Total number of event records matching the query. |
+
+### Event object fields
+
+<Expandable title="Event object">
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the event. |
+| `title` | string | Event title as entered by the organizer. |
+| `event_type` | string | Category of the event, such as `info_session`, `workshop`, or `networking`. |
+| `start_at` | string (ISO 8601) | Scheduled start time of the event. |
+| `end_at` | string (ISO 8601) | Scheduled end time of the event. |
+| `virtual` | boolean | `true` if the event is held online; `false` if in-person. |
+| `employer_id` | string | Handshake ID of the employer hosting the event. |
+| `employer_name` | string | Display name of the hosting employer. |
+| `created_at` | string (ISO 8601) | Timestamp when the event record was created. |
+| `updated_at` | string (ISO 8601) | Timestamp when the event record was last updated. |
+
+</Expandable>
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/events?page_size=25&sorting_column=start_at&sorting_order=asc" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "results": [
+    {
+      "id": "5529104",
+      "title": "Acme Corp Engineering Info Session",
+      "event_type": "info_session",
+      "start_at": "2024-04-10T18:00:00Z",
+      "end_at": "2024-04-10T19:30:00Z",
+      "virtual": true,
+      "employer_id": "30192",
+      "employer_name": "Acme Corp",
+      "created_at": "2024-03-01T10:00:00Z",
+      "updated_at": "2024-03-15T11:30:00Z"
+    },
+    {
+      "id": "5528890",
+      "title": "Finance Career Workshop",
+      "event_type": "workshop",
+      "start_at": "2024-04-12T14:00:00Z",
+      "end_at": "2024-04-12T16:00:00Z",
+      "virtual": false,
+      "employer_id": "58847",
+      "employer_name": "Meridian Partners",
+      "created_at": "2024-02-28T09:00:00Z",
+      "updated_at": "2024-03-14T08:00:00Z"
+    }
+  ],
+  "next_cursor": "eyJpZCI6IjU1Mjg4OTAifQ==",
+  "total_count": 74
+}
+```

@@ -1,0 +1,152 @@
+---
+title: "Track Job Applications Through the Handshake API"
+sidebarTitle: "Track Applications"
+description: "Pull job postings and application records from Handshake to monitor recruiting activity, track applicant pipelines, and sync data with your ATS."
+---
+
+The Handshake API exposes job postings and application records, letting you track recruiting activity, monitor application pipelines, and sync with external ATS systems. By combining the `/v1/jobs` and `/v1/applications` endpoints, you can build a complete picture of which employers are hiring at your institution, which students are applying, and where each applicant stands in the hiring process.
+
+## Fetching job postings
+
+`GET /v1/jobs` returns all jobs posted at your institution. Each job record describes a posting created by an employer and targeted at your students.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/jobs \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields in each job record:
+
+| Field | Description |
+|---|---|
+| `id` | Unique identifier for the job posting |
+| `title` | Job title as entered by the employer |
+| `employer_name` | Name of the hiring employer |
+| `job_type` | Type of role (e.g. `full_time`, `part_time`, `internship`) |
+| `status` | Current posting status (e.g. `approved`, `expired`, `closed`) |
+| `created_at` | ISO 8601 timestamp when the posting was created |
+| `updated_at` | ISO 8601 timestamp of the last update |
+
+Use `updated_since` to fetch only jobs modified after a given timestamp, and page through results using `next_cursor`.
+
+## Fetching applications
+
+`GET /v1/applications` returns student applications submitted to jobs at your institution. Each record links a student to a job and tracks where that candidate is in the hiring process.
+
+```bash
+curl https://edu-api.joinhandshake.com/v1/applications \
+  -H "x-api-key: <YOUR_API_KEY>" \
+  -G \
+  --data-urlencode "page_size=100"
+```
+
+Key fields in each application record:
+
+| Field | Description |
+|---|---|
+| `id` | Unique identifier for the application |
+| `student_id` | ID of the student who applied |
+| `job_id` | ID of the job posting |
+| `status` | Current application status (see below) |
+| `created_at` | ISO 8601 timestamp when the application was submitted |
+| `updated_at` | ISO 8601 timestamp of the last status change |
+
+Application status values progress through the hiring lifecycle:
+
+| Status | Meaning |
+|---|---|
+| `applied` | Application submitted, not yet reviewed |
+| `reviewed` | Employer has viewed the application |
+| `interview` | Candidate invited to interview |
+| `offer` | Offer extended to the candidate |
+| `hired` | Candidate accepted the offer |
+| `rejected` | Application declined at any stage |
+
+## Joining jobs and applications
+
+Because `/v1/applications` includes a `job_id` on every record, you can fetch job details separately and join them in your application. The snippet below fetches all applications and enriches each one with job metadata.
+
+```python
+import requests
+
+API_BASE = "https://edu-api.joinhandshake.com/v1"
+HEADERS = {"x-api-key": "<YOUR_API_KEY>"}
+
+
+def fetch_all(endpoint, params=None):
+    """Page through a list endpoint and return all results."""
+    params = {**(params or {}), "page_size": 100}
+    results = []
+
+    while True:
+        response = requests.get(f"{API_BASE}{endpoint}", headers=HEADERS, params=params)
+        response.raise_for_status()
+        body = response.json()
+        results.extend(body.get("results", []))
+
+        next_cursor = body.get("next_cursor")
+        if not next_cursor:
+            break
+        params["page_cursor"] = next_cursor
+
+    return results
+
+
+def build_application_report():
+    # Fetch all jobs and index them by ID
+    jobs = fetch_all("/jobs")
+    job_index = {job["id"]: job for job in jobs}
+
+    # Fetch all applications and join to job details
+    applications = fetch_all("/applications")
+    enriched = []
+
+    for app in applications:
+        job = job_index.get(app["job_id"], {})
+        enriched.append({
+            "application_id": app["id"],
+            "student_id": app["student_id"],
+            "status": app["status"],
+            "applied_at": app["created_at"],
+            "job_title": job.get("title"),
+            "employer_name": job.get("employer_name"),
+            "job_type": job.get("job_type"),
+        })
+
+    return enriched
+```
+
+## Monitoring pipeline status
+
+Track how many candidates are at each stage by grouping applications by `status`. This gives you a real-time view of your institution's recruiting pipeline.
+
+```python
+from collections import Counter
+
+def pipeline_summary(applications):
+    """Return a count of applications at each status stage."""
+    status_counts = Counter(app["status"] for app in applications)
+
+    stages = ["applied", "reviewed", "interview", "offer", "hired", "rejected"]
+    print("--- Application Pipeline Summary ---")
+    for stage in stages:
+        count = status_counts.get(stage, 0)
+        print(f"  {stage:<12} {count:>6}")
+
+    return dict(status_counts)
+```
+
+To filter applications by status before running analytics, pass `status` as a query parameter if your integration supports it, or filter client-side after fetching:
+
+```python
+# Filter to candidates currently in the interview stage
+interviews = [app for app in applications if app["status"] == "interview"]
+```
+
+Use `updated_since` on `GET /v1/applications` to limit your query to applications whose status changed after your last sync — this avoids pulling the full application history on every run.
+
+<Note>
+  Applications reference both a `student_id` and a `job_id`. Use these to join with student and job records in your data store. Avoid fetching full student or job objects on a per-application basis; instead, sync those tables separately and join locally for better performance.
+</Note>

@@ -1,0 +1,61 @@
+---
+title: "Get Career Fair by ID — Handshake Integration API Reference"
+sidebarTitle: "Get Career Fair"
+description: "GET /v1/career_fairs/{id} — Retrieve a single career fair by its Handshake ID, including name, schedule, and virtual or in-person format."
+---
+
+Retrieve full details for a single career fair using its Handshake career fair ID. Use this endpoint when you need the complete record for a specific fair, such as confirming dates and format before fetching related session or attendance data.
+
+## Endpoint
+
+```
+GET https://edu-api.joinhandshake.com/v1/career_fairs/{id}
+```
+
+## Authentication
+
+Include your API key in the request header:
+
+```
+x-api-key: <your-api-key>
+```
+
+## Path parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | The Handshake career fair ID. |
+
+## Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique Handshake identifier for the career fair. |
+| `name` | string | Name of the career fair. |
+| `start_at` | string (ISO 8601) | Scheduled start time of the career fair. |
+| `end_at` | string (ISO 8601) | Scheduled end time of the career fair. |
+| `virtual` | boolean | `true` if the career fair is held online; `false` if in-person. |
+| `created_at` | string (ISO 8601) | Timestamp when the career fair record was created. |
+| `updated_at` | string (ISO 8601) | Timestamp when the career fair record was last updated. |
+
+## Example request
+
+```bash
+curl --request GET \
+  --url "https://edu-api.joinhandshake.com/v1/career_fairs/10044" \
+  --header "x-api-key: <your-api-key>"
+```
+
+## Example response
+
+```json
+{
+  "id": "10044",
+  "name": "Spring 2024 All-Majors Career Fair",
+  "start_at": "2024-04-15T13:00:00Z",
+  "end_at": "2024-04-15T17:00:00Z",
+  "virtual": false,
+  "created_at": "2024-01-10T08:00:00Z",
+  "updated_at": "2024-03-20T15:45:00Z"
+}
+```
